@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIG-DL-India</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <style>
+        /* Existing styles */
+        body::-webkit-scrollbar {
+          width: 12px;
+          height: 12px;
+        }
+        
+        body::-webkit-scrollbar-thumb {
+          background: linear-gradient(45deg, #6200ea, #03dac6);
+          border-radius: 6px;
+        }
+        
+        body::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(45deg, #3700b3, #018786);
+        }
+        
+        body::-webkit-scrollbar-track {
+          background: #f5f5f5;
+          border-radius: 6px;
+        }
+        
+        body::-webkit-scrollbar-track:hover {
+          background: #e0e0e0;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        /* Dark mode styles */
+        .dark {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .dark .glass-card {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dark .text-gray-700 {
+            color: #e0e0e0;
+        }
+
+        .dark .text-indigo-900 {
+            color: #818cf8;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #1a1a1a;
+        }
+
+        .dark .bg-gray-100 {
+            background-color: #262626;
+        }
+
+        /* Enhanced Menu Styles */
+        .menu-item {
+            position: relative;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            background: #6366f1;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover::after {
+            width: 100%;
+            left: 0;
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Event Tooltip */
+        .event-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 50;
+        }
+
+        .calendar-cell:hover .event-tooltip {
+            display: block;
+        }
+
+        .dark .event-tooltip {
+            background: rgba(26, 26, 26, 0.95);
+        }
+
+        /* Countdown Timer */
+        .countdown {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .countdown-item {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Existing animation styles */
+        .gradient-bg {
+            background: linear-gradient(120deg, #6366f1, #8b5cf6, #3b82f6);
+            animation: gradient 15s ease infinite;
+            background-size: 400% 400%;
+        }
+        
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Existing responsive styles */
+        @media (max-width: 768px) {
+            .desktop-menu {
+                display: none;
+            }
+            .mobile-menu {
+                display: block;
+            }
+            .mobile-nav {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                height: 100vh;
+                width: 70%;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                transition: 0.3s;
+                padding: 2rem;
+                z-index: 50;
+            }
+            .mobile-nav.active {
+                right: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50" data-theme="light">
+    <!-- Navigation -->
+    <nav class="glass-card fixed w-full z-40 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-indigo-900">SIG-DL-India</h1>
+            <!-- Desktop Menu -->
+            <div class="desktop-menu space-x-6 hidden md:flex items-center">
+                <a href="#about" class="menu-item text-gray-700 hover:text-indigo-600">About</a>
+                <a href="#sessions" class="menu-item text-gray-700 hover:text-indigo-600">Sessions</a>
+                <a href="#calendar" class="menu-item text-gray-700 hover:text-indigo-600">Calendar</a>
+                <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
+                </button>
+            </div>
+            <!-- Mobile Menu Button -->
+            <button class="mobile-menu md:hidden text-gray-700" onclick="toggleMenu()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav md:hidden" id="mobileNav">
+        <div class="flex flex-col space-y-4">
+            <a href="#about" class="menu-item text-gray-700 hover:text-indigo-600" onclick="toggleMenu()">About</a>
+            <a href="#sessions" class="menu-item text-gray-700 hover:text-indigo-600" onclick="toggleMenu()">Sessions</a>
+            <a href="#calendar" class="menu-item text-gray-700 hover:text-indigo-600" onclick="toggleMenu()">Calendar</a>
+            <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <header class="gradient-bg min-h-screen flex items-center justify-center px-4">
+        <div class="text-center text-white space-y-6">
+            <h1 class="text-4xl md:text-6xl font-bold animate-bounce">SIG-DL-India</h1>
+            <p class="text-lg md:text-xl">Special Interest Group on Deep Learning, India</p>
+            <!-- Countdown Timer -->
+            <div class="countdown">
+                <div class="countdown-item">
+                    <span id="days" class="text-2xl font-bold">00</span>
+                    <p>Days</p>
+                </div>
+                <div class="countdown-item">
+                    <span id="hours" class="text-2xl font-bold">00</span>
+                    <p>Hours</p>
+                </div>
+                <div class="countdown-item">
+                    <span id="minutes" class="text-2xl font-bold">00</span>
+                    <p>Minutes</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Group Photo Section -->
+    <section class="py-20 px-4 md:px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="glass-card rounded-2xl p-6 md:p-8 hover-scale">
+                <h2 class="text-3xl font-bold text-indigo-900 mb-6">Our Community</h2>
+                <div class="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden">
+                    <img src="group-photo.jpg" alt="SIG-DL-India Group Photo" class="object-cover w-full h-full">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Existing About Section -->
+       <!-- About Section -->
+    <section id="about" class="py-20 px-4 md:px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="glass-card rounded-2xl p-6 md:p-8 hover-scale">
+                <h2 class="text-3xl font-bold text-indigo-900 mb-6">About Us</h2>
+                <p class="text-gray-700 mb-6">SIG-DL-India is a special interest group focused on deep learning and its applications in various fields. Our objective is to provide a platform for researchers, practitioners, and students to share knowledge, ideas, and experiences in deep learning.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card rounded-xl p-6">
+                        <h3 class="text-xl font-semibold text-indigo-900 mb-4">🌟 Our Mission</h3>
+                        <ul class="space-y-3 text-gray-700">
+                            <li>• Organizing regular meetups and workshops</li>
+                            <li>• Providing research sharing platforms</li>
+                            <li>• Facilitating industry-academia collaborations</li>
+                            <li>• Promoting deep learning education</li>
+                        </ul>
+                    </div>
+                    <div class="glass-card rounded-xl p-6">
+                        <h3 class="text-xl font-semibold text-indigo-900 mb-4">🤝 Get Involved</h3>
+                        <a href="https://forms.gle/qh464Bx1E8kyTGXz8">
+                            <button class="w-full bg-indigo-600 text-white rounded-lg py-3 hover:bg-indigo-700 transition">
+                                Join Our Community
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Existing Sessions Section -->
+    <!-- Sessions Section -->
+    <section id="sessions" class="py-20 px-4 md:px-6 bg-gray-100">
+        <div class="max-w-4xl mx-auto space-y-8">
+            <h2 class="text-3xl font-bold text-indigo-900 text-center mb-12">Recent Sessions</h2>
+            <div class="glass-card rounded-2xl p-6 md:p-8 hover-scale">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-indigo-900">Deep Operator Networks - Novel DL Methodologies</h3>
+                        <p class="text-gray-600 mt-2">Presenter: Anirbit Mukherjee, University of Manchester</p>
+                        <p class="text-gray-600">Date: January 16th, 2025</p>
+                    </div>
+                    <button class="bg-indigo-600 text-white rounded-lg px-6 py-3 hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Join Session
+                    </button>
+                </div>
+                <div class="mt-6 flex gap-4">
+                    <a href="https://arxiv.org/pdf/2308.06338" class="text-indigo-600 hover:text-indigo-700">📚 Materials</a>
+                    <a href="#" class="text-indigo-600 hover:text-indigo-700">📄 Paper</a>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-6 md:p-8 hover-scale">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-indigo-900">AI on Edge - Optimization of Language Models</h3>
+                        <p class="text-gray-600 mt-2">Presenter: Sandeep Chatterjee, Indian Statistical Institute</p>
+                        <p class="text-gray-600">Date: January 2nd, 2025</p>
+                    </div>
+                    <button class="bg-indigo-600 text-white rounded-lg px-6 py-3 hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Join Session
+                    </button>
+                </div>
+                <div class="mt-6 flex gap-4">
+                    <a href="https://colab.research.google.com/drive/1gWZmJgXjyBkP0_lUAkvdSgOQI2jv4gmq" class="text-indigo-600 hover:text-indigo-700">📚 Materials</a>
+                    <a href="#" class="text-indigo-600 hover:text-indigo-700">📄 Paper</a>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-6 md:p-8 hover-scale">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-indigo-900">Trustable Internet - Countering the Hate with AI </h3>
+                        <p class="text-gray-600 mt-2">Presenter: Sahajpreet Singh, National University of Singapore</p>
+                        <p class="text-gray-600">Date: December 21st, 2024</p>
+                    </div>
+                    <button class="bg-indigo-600 text-white rounded-lg px-6 py-3 hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Join Session
+                    </button>
+                </div>
+                <div class="mt-6 flex gap-4">
+                    <a href="https://arxiv.org/pdf/2403.10088" class="text-indigo-600 hover:text-indigo-700">📚 Materials</a>
+                    <a href="#" class="text-indigo-600 hover:text-indigo-700">📄 Paper</a>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-6 md:p-8 hover-scale">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-indigo-900">Probing Critical Learning Dynamics of PLMs</h3>
+                        <p class="text-gray-600 mt-2">Presenter: Sarah Massod, University of Copenhagen</p>
+                        <p class="text-gray-600">Date: November 30th, 2024</p>
+                    </div>
+                    <button class="bg-indigo-600 text-white rounded-lg px-6 py-3 hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Join Session
+                    </button>
+                </div>
+                <div class="mt-6 flex gap-4">
+                    <a href="https://ieeexplore.ieee.org/abstract/document/9458789/" class="text-indigo-600 hover:text-indigo-700">📚 Materials</a>
+                    <a href="#" class="text-indigo-600 hover:text-indigo-700">📄 Paper</a>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-6 md:p-8 hover-scale">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-indigo-900">Is Brownian Motion Alive - RL Agents for Trading </h3>
+                        <p class="text-gray-600 mt-2">Presenter: Vinit Shah, WorldQuant</p>
+                        <p class="text-gray-600">Date: November 7th, 2024</p>
+                    </div>
+                    <button class="bg-indigo-600 text-white rounded-lg px-6 py-3 hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Join Session
+                    </button>
+                </div>
+                <div class="mt-6 flex gap-4">
+                    <a href="#" class="text-indigo-600 hover:text-indigo-700">📚 Materials</a>
+                    <a href="#" class="text-indigo-600 hover:text-indigo-700">📄 Paper</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Enhanced Calendar Section -->
+    <section id="calendar" class="py-20 px-4 md:px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="glass-card rounded-2xl p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-indigo-900 mb-8">Event Calendar</h2>
+                <div class="grid grid-cols-7 gap-2 md:gap-4 text-sm md:text-base">
+                    <!-- Calendar headers -->
+                    [Previous Calendar Headers]
+
+                    <!-- Enhanced Calendar days with tooltips -->
+                    <div class="calendar-cell rounded-lg p-2 md:p-4 text-center border relative">
+                        1
+                    </div>
+                    <div class="calendar-cell rounded-lg p-2 md:p-4 text-center border relative">
+                        2
+                    </div>
+                    <div class="calendar-cell rounded-lg p-2 md:p-4 text-center border event-cell relative">
+                        3
+                        <div class="event-tooltip">
+                            <h4 class="font-semibold">Deep Learning Workshop</h4>
+                            <p>Time: 2:00 PM IST</p>
+                            <p>Speaker: Dr. John Doe</p>
+                        </div>
+                    </div>
+                    <!-- Continue with remaining calendar days -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top bg-indigo-600 text-white rounded-full p-4 hover:bg-indigo-700 transition" onclick="scrollToTop()">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+        </svg>
+    </button>
+
+    <script>
+        // Toggle mobile menu
+        function toggleMenu() {
+            const nav = document.getElementById('mobileNav');
+            nav.classList.toggle('active');
+        }
+
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+
+        // Initialize dark mode from localStorage
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark');
+        }
+
+        // Back to top button
+        window.onscroll = function() {
+            const button = document.querySelector('.back-to-top');
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                button.classList.add('visible');
+            } else {
+                button.classList.remove('visible');
+            }
+        };
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Countdown timer
+        function updateCountdown() {
+            const nextEvent = new Date('2025-02-16T14:00:00'); // Example next event date
+            const now = new Date();
+            const difference = nextEvent - now;
+
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById('days').textContent = String(days).padStart(2, '0');
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+        }
+
+        // Update countdown every minute
+        updateCountdown();
+        setInterval(updateCountdown, 60000);
+
+        // Calendar event tooltips
+        const calendarCells = document.querySelectorAll('.calendar-cell');
+        const events = {
+            '3': {
+                title: 'Deep Learning Workshop',
+                time: '2:00 PM IST',
+                speaker: 'Dr. John Doe'
+            },
+            '11': {
+                title: 'Neural Architecture Search',
+                time: '3:30 PM IST',
+                speaker: 'Dr. Jane Smith'
+            },
+            '19': {
+                title: 'Reinforcement Learning Seminar',
+                time: '1:00 PM IST',
+                speaker: 'Prof. Robert Johnson'
+            }
+        };
+
+        calendarCells.forEach(cell => {
+            const day = cell.textContent.trim();
+            if (events[day]) {
+                cell.classList.add('event-cell');
+                const tooltip = document.createElement('div');
+                tooltip.className = 'event-tooltip';
+                tooltip.innerHTML = `
+                    <h4 class="font-semibold">${events[day].title}</h4>
+                    <p>Time: ${events[day].time}</p>
+                    <p>Speaker: ${events[day].speaker}</p>
+                `;
+                cell.appendChild(tooltip);
+            }
+        });
+
+        // Handle dark mode for dynamic elements
+        function updateDarkMode() {
+            const isDark = document.body.classList.contains('dark');
+            const tooltips = document.querySelectorAll('.event-tooltip');
+            tooltips.forEach(tooltip => {
+                tooltip.style.background = isDark ? 'rgba(26, 26, 26, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                tooltip.style.color = isDark ? '#ffffff' : '#000000';
+            });
+        }
+
+        // Add dark mode observer
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.attributeName === 'class') {
+                    updateDarkMode();
+                }
+            });
+        });
+
+        observer.observe(document.body, {
+            attributes: true
+        });
+
+        // Initialize tooltips dark mode
+        updateDarkMode();
+    </script>
+</body>
+</html>
